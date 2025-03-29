@@ -3,4 +3,4 @@ services:
     build: .
     volumes:
       - ./:/env
-    command: make deb
+    command: sleep infinity
