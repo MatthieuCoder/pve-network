@@ -1,0 +1,6 @@
+services:
+  pve-network:
+    build: .
+    volumes:
+      - ./:/env
+    command: make deb
