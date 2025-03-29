@@ -115,6 +115,7 @@ sub generate_controller_config {
     my $routemap = { rule => undef, action => "permit" };
     push(@{$config->{frr_routemap}->{'MAP_VTEP_IN'}}, $routemap );
     push(@{$config->{frr_routemap}->{'MAP_VTEP_OUT'}}, $routemap );
+    push(@{$config->{frr_routemap}->{'NOT_DEFAULT'}}, $routemap );
 
     return $config;
 }
@@ -208,6 +209,18 @@ sub generate_controller_zone_config {
 	$config->{frr_prefix_list}->{'only_default'}->{1} = "permit 0.0.0.0/0";
 	$config->{frr_prefix_list_v6}->{'only_default_v6'}->{1} = "permit ::/0";
 
+	# simple routemap to deny accepting default routes
+	my $routemap_config_v6 = ();
+	push @{$routemap_config_v6}, "match ipv6 address prefix-list only_default_v6";
+	my $routemap_v6 = { rule => $routemap_config_v6, action => "deny" };
+	unshift(@{$config->{frr_routemap}->{'NOT_DEFAULT'}}, $routemap_v6);
+
+	my $routemap_config = ();
+	push @{$routemap_config}, "match ip address prefix-list only_default";
+	my $routemap = { rule => $routemap_config, action => "deny" };
+	unshift(@{$config->{frr_routemap}->{'NOT_DEFAULT'}}, $routemap);
+
+
 	if (!$exitnodes_primary || $exitnodes_primary eq $local_node) {
 	    #filter default route coming from other exit nodes on primary node or both nodes if no primary is defined.
 	    my $routemap_config_v6 = ();
@@ -248,6 +261,7 @@ sub generate_controller_zone_config {
 	    #redistribute connected to be able to route to local vms on the gateway
 	    push @controller_config, "redistribute connected";
 		push @controller_config, "neighbor exitnode_local_routing activate";
+		push @controller_config, "neighbor exitnode_local_routing route-map NOT_DEFAULT in";
 	    push(@{$config->{frr}->{router}->{"bgp $asn vrf $vrf"}->{"address-family"}->{"ipv4 unicast"}}, @controller_config);
 	    push(@{$config->{frr}->{router}->{"bgp $asn vrf $vrf"}->{"address-family"}->{"ipv6 unicast"}}, @controller_config);
 	} else {
