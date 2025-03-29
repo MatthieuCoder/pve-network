@@ -234,7 +234,23 @@ sub generate_controller_zone_config {
 	    unshift(@{$config->{frr_routemap}->{'MAP_VTEP_OUT'}}, $routemap);
 	}
 
-	if (!$exitnodes_local_routing) {
+	if ($exitnodes_local_routing) {
+		# if exitnodes_local_routing is enabled, we add a bgp unnumbered peer between the two VRFs
+		@controller_config = ();
+		push @controller_config, "neighbor exitnode_local_routing interface xvrf_$id";
+	    push(@{$config->{frr}->{router}->{"bgp $asn vrf $vrf"}->{""}}, @controller_config);
+
+		@controller_config = ();
+		push @controller_config, "neighbor exitnode_local_routing interface xvrfp_$id";
+	    push(@{$config->{frr}->{router}->{"bgp $asn"}->{""}}, @controller_config);
+
+	    @controller_config = ();
+	    #redistribute connected to be able to route to local vms on the gateway
+	    push @controller_config, "redistribute connected";
+		push @controller_config, "neighbor exitnode_local_routing activate";
+	    push(@{$config->{frr}->{router}->{"bgp $asn vrf $vrf"}->{"address-family"}->{"ipv4 unicast"}}, @controller_config);
+	    push(@{$config->{frr}->{router}->{"bgp $asn vrf $vrf"}->{"address-family"}->{"ipv6 unicast"}}, @controller_config);
+	} else {
 	    @controller_config = ();
 	    #import /32 routes of evpn network from vrf1 to default vrf (for packet return)
 	    push @controller_config, "import vrf $vrf";
@@ -281,25 +297,6 @@ sub generate_controller_zone_config {
 
 sub generate_controller_vnet_config {
     my ($class, $plugin_config, $controller, $zone, $zoneid, $vnetid, $config) = @_;
-
-    my $exitnodes = $zone->{'exitnodes'};
-    my $exitnodes_local_routing = $zone->{'exitnodes-local-routing'};
-
-    return if !$exitnodes_local_routing;
-
-    my $local_node = PVE::INotify::nodename();
-    my $is_gateway = $exitnodes->{$local_node};
-
-    return if !$is_gateway;
-
-    my $subnets = PVE::Network::SDN::Vnets::get_subnets($vnetid, 1);
-    my @controller_config = ();
-    foreach my $subnetid (sort keys %{$subnets}) {
-        my $subnet = $subnets->{$subnetid};
-	my $cidr = $subnet->{cidr};
-	push @controller_config, "ip route $cidr 10.255.255.2 xvrf_$zoneid";
-    }
-    push(@{$config->{frr_ip_protocol}}, @controller_config);
 }
 
 sub on_delete_hook {

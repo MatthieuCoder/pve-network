@@ -20,6 +20,7 @@ router bgp 65000
  neighbor VTEP bfd
  neighbor 192.168.0.2 peer-group VTEP
  neighbor 192.168.0.3 peer-group VTEP
+ neighbor exitnode_local_routing interface xvrfp_myzone
  !
  address-family l2vpn evpn
   neighbor VTEP activate
@@ -33,6 +34,17 @@ router bgp 65000 vrf vrf_myzone
  bgp router-id 192.168.0.1
  no bgp hard-administrative-reset
  no bgp graceful-restart notification
+ neighbor exitnode_local_routing interface xvrf_myzone
+ !
+ address-family ipv4 unicast
+  redistribute connected
+  neighbor exitnode_local_routing activate
+ exit-address-family
+ !
+ address-family ipv6 unicast
+  redistribute connected
+  neighbor exitnode_local_routing activate
+ exit-address-family
  !
  address-family l2vpn evpn
   default-originate ipv4
@@ -57,8 +69,6 @@ exit
 !
 route-map MAP_VTEP_OUT permit 1
 exit
-!
-ip route 10.0.0.0/24 10.255.255.2 xvrf_myzone
 !
 line vty
 !
