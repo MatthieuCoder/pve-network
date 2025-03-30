@@ -369,4 +369,10 @@ sub get_mtu {
     die "please implement inside plugin";
 }
 
+sub get_vrf {
+    my ($class, $plugin_config, $zoneid) = @_;
+
+    die "please implement inside plugin";
+}
+
 1;

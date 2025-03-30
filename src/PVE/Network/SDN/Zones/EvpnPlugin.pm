@@ -323,6 +323,12 @@ sub vnet_update_hook {
     }
 }
 
+sub get_vrf {
+    my ($class, $plugin_config, $zoneid) = @_;
+
+    return "vrf_$zoneid";
+}
+
 1;
 
 
