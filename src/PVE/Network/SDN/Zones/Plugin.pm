@@ -51,6 +51,11 @@ my $defaultData = {
 	    description => "use a specific ipam",
 	    optional => 1,
 	},
+	dhcp => {
+	    description => 'Type of the DHCP backend for this zone',
+	    type => 'string',
+	    enum => PVE::Network::SDN::Dhcp::Plugin->lookup_types(),
+	},
     },
 };
 

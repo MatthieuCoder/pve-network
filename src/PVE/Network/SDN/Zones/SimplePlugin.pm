@@ -28,11 +28,6 @@ sub properties {
 	    type => 'string', format => 'dns-name',
 	    description => "dns domain zone  ex: mydomain.com",
 	},
-	dhcp => {
-	    description => 'Type of the DHCP backend for this zone',
-	    type => 'string',
-	    enum => PVE::Network::SDN::Dhcp::Plugin->lookup_types(),
-	},
     };
 }
 
