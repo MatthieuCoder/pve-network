@@ -223,6 +223,12 @@ sub vnet_update_hook {
     }
 }
 
+sub get_mtu {
+    my ($class, $zoneid, $zone_config) = @_;
+
+    return $zone_config->{mtu};
+}
+
 1;
 
 
