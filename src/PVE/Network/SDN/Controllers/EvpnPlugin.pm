@@ -238,19 +238,25 @@ sub generate_controller_zone_config {
 	if ($exitnodes_local_routing) {
 		# if exitnodes_local_routing is enabled, we add a bgp unnumbered peer between the two VRFs
 		@controller_config = ();
-		push @controller_config, "neighbor exitnode_local_routing interface xvrf_$id";
+		push @controller_config, "neighbor xvrf_$id interface remote-as internal";
 	    push(@{$config->{frr}->{router}->{"bgp $asn vrf $vrf"}->{""}}, @controller_config);
 
 		@controller_config = ();
-		push @controller_config, "neighbor exitnode_local_routing interface xvrfp_$id";
+		push @controller_config, "neighbor xvrfp_$id interface remote-as internal";
 	    push(@{$config->{frr}->{router}->{"bgp $asn"}->{""}}, @controller_config);
 
 	    @controller_config = ();
 	    #redistribute connected to be able to route to local vms on the gateway
 	    push @controller_config, "redistribute connected";
-		push @controller_config, "neighbor exitnode_local_routing activate";
-		push @controller_config, "neighbor exitnode_local_routing route-map NOT_DEFAULT in";
-	    push(@{$config->{frr}->{router}->{"bgp $asn vrf $vrf"}->{"address-family"}->{"ipv4 unicast"}}, @controller_config);
+		push @controller_config, "neighbor xvrfp_$id activate";
+		push @controller_config, "neighbor xvrfp_$id route-map NOT_DEFAULT in";
+	    push(@{$config->{frr}->{router}->{"bgp $asn"}->{"address-family"}->{"ipv4 unicast"}}, @controller_config);
+
+	    @controller_config = ();
+	    #redistribute connected to be able to route to local vms on the gateway
+	    push @controller_config, "redistribute connected";
+		push @controller_config, "neighbor xvrf_$id activate";
+		push @controller_config, "neighbor xvrf_$id route-map NOT_DEFAULT in";
 	    push(@{$config->{frr}->{router}->{"bgp $asn vrf $vrf"}->{"address-family"}->{"ipv6 unicast"}}, @controller_config);
 
 		my $notdefault = [
