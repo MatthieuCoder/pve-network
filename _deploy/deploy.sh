@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 rm *.deb
 cp ../*.deb .
 while IFS= read -r dest; do
