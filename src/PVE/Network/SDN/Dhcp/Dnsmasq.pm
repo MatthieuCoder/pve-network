@@ -208,7 +208,7 @@ DBUSCFG
 
     mkdir($config_directory, 0755) if !-d $config_directory;
 
-    my $vrf = PVE::Network::SDN::Zones::get_vrf($zone_config, $dhcpid);
+    my $vrf = PVE::Network::SDN::Zones::get_vrf($zone_cfg, $dhcpid);
 
     my $default_config = <<CFG;
 CONFIG_DIR='$config_directory,\*.conf'
