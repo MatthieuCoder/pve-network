@@ -39,11 +39,13 @@ router bgp 65000 vrf vrf_myzone
  address-family ipv4 unicast
   redistribute connected
   neighbor exitnode_local_routing activate
+  neighbor exitnode_local_routing route-map NOT_DEFAULT in
  exit-address-family
  !
  address-family ipv6 unicast
   redistribute connected
   neighbor exitnode_local_routing activate
+  neighbor exitnode_local_routing route-map NOT_DEFAULT in
  exit-address-family
  !
  address-family l2vpn evpn
@@ -68,6 +70,17 @@ route-map MAP_VTEP_IN permit 3
 exit
 !
 route-map MAP_VTEP_OUT permit 1
+exit
+!
+route-map NOT_DEFAULT deny 1
+ match ipv6 address prefix-list only_default_v6
+exit
+!
+route-map NOT_DEFAULT deny 2
+ match ip address prefix-list only_default
+exit
+!
+route-map NOT_DEFAULT permit 3
 exit
 !
 line vty
