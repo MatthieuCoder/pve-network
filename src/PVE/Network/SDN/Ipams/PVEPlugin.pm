@@ -82,6 +82,11 @@ sub add_subnet {
     die "$@" if $@;
 }
 
+sub update_subnet {
+    my ($class, $plugin_config, $subnetid, $subnet, $old_subnet, $noerr) = @_;
+    # we don't need to do anything on update
+}
+
 sub only_gateway_remains {
     my ($ips) = @_;
 
@@ -196,7 +201,11 @@ sub add_next_freeip {
 
 	die "can't find free ip in subnet '$cidr'\n" if !$freeip;
 
-	$dbsubnet->{ips}->{$freeip} = {};
+	$dbsubnet->{ips}->{$freeip} = {
+	    mac => $mac,
+	    hostname => $hostname,
+	    vmid => $vmid
+	};
 
 	write_db($db);
     });

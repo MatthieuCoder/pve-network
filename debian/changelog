@@ -1,9 +1,36 @@
-libpve-network-perl (0.10.1-2matthieu) bookworm; urgency=medium
+libpve-network-perl (0.11.2) bookworm; urgency=medium
 
-  * dhcp: dnsmasq: add dhcp support for VRFs and EVPN Zones
-  * evpn: use bgp unnumbered to handle veth exitnode local routing route propagation
+  * frr: remove filtering outfunc of frr-reload command, new FRR 10.2 behavior
+    causes issues with that.
 
- -- Matthieu ignolet <m@mpgn.dev>  Sun, 30 Mar 2025 17:32:25 +0400
+  * frr: actively enable frr systemd service unit if not enabled and start frr
+    on reloading the controller config
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 09 Apr 2025 08:16:38 +0200
+
+libpve-network-perl (0.11.1) bookworm; urgency=medium
+
+  * ipam: netbox: fix adding VMs without a name set in the options
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 08 Apr 2025 15:35:08 +0200
+
+libpve-network-perl (0.11.0) bookworm; urgency=medium
+
+  * dns: powerdns: correctly handle different records types (A / AAAA)
+
+  * ipam: netbox: implement deleting subnets and improve error handling.
+
+  * fix #5496: fix handling DHCP ranges and allocation for Netbox IPAM
+    plugin.
+
+  * vnet: do not skip if no range is defined, ask for allocation inside prefix
+    instead.
+
+  * correctly register reservation details when allocating the next free IP.
+
+  * subnet: dhcp: do not allow overlapping DHCP ranges.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 08 Apr 2025 13:52:02 +0200
 
 libpve-network-perl (0.10.1) bookworm; urgency=medium
 

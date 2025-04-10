@@ -3,7 +3,7 @@ package PVE::Network::SDN::SubnetPlugin;
 use strict;
 use warnings;
 
-use Net::IP;
+use Net::IP qw($IP_NO_OVERLAP);
 use Net::Subnet qw(subnet_matcher);
 
 use PVE::Cluster qw(cfs_read_file cfs_write_file cfs_lock_file);
@@ -82,22 +82,37 @@ sub validate_dhcp_ranges {
 
     my $dhcp_ranges = PVE::Network::SDN::Subnets::get_dhcp_ranges($subnet);
 
+    my $validated_ranges = [];
+
     foreach my $dhcp_range (@$dhcp_ranges) {
 	my $dhcp_start = $dhcp_range->{'start-address'};
 	my $dhcp_end = $dhcp_range->{'end-address'};
 
-	my $start_ip = new Net::IP($dhcp_start);
-	raise_param_exc({ 'dhcp-range' => "start-adress is not a valid IP $dhcp_start" }) if !$start_ip;
+	my $start_ip = Net::IP->new($dhcp_start);
+	raise_param_exc({ 'dhcp-range' => "start-address is not a valid IP $dhcp_start" }) if !$start_ip;
+	raise_param_exc({ 'dhcp-range' => "start-address must be a singular IP" }) if $start_ip->size() != 1;
+	$dhcp_range->{'start-address'} = $start_ip->ip();
 
-	my $end_ip = new Net::IP($dhcp_end);
-	raise_param_exc({ 'dhcp-range' => "end-adress is not a valid IP $dhcp_end" }) if !$end_ip;
+	my $end_ip = Net::IP->new($dhcp_end);
+	raise_param_exc({ 'dhcp-range' => "end-address is not a valid IP $dhcp_end" }) if !$end_ip;
+	raise_param_exc({ 'dhcp-range' => "end-address must be a singular IP" }) if $end_ip->size() != 1;
+	$dhcp_range->{'end-address'} = $end_ip->ip();
 
-	if (Net::IP::ip_bincomp($end_ip->binip(), 'lt', $start_ip->binip()) == 1) {
+	if ($start_ip->bincomp('gt', $end_ip)) {
 	    raise_param_exc({ 'dhcp-range' => "start-address $dhcp_start must be smaller than end-address $dhcp_end" })
 	}
 
 	raise_param_exc({ 'dhcp-range' => "start-address $dhcp_start is not in subnet $cidr" }) if !$subnet_matcher->($dhcp_start);
 	raise_param_exc({ 'dhcp-range' => "end-address $dhcp_end is not in subnet $cidr" }) if !$subnet_matcher->($dhcp_end);
+
+	my $ip_range = Net::IP->new("$dhcp_range->{'start-address'} - $dhcp_range->{'end-address'}");
+	for my $other_range (@$validated_ranges) {
+	    if ($ip_range->overlaps($other_range) != $Net::IP::IP_NO_OVERLAP) {
+		raise_param_exc({ 'dhcp-range' => "dhcp ranges must not overlap" });
+	    }
+	}
+
+	push @$validated_ranges, $ip_range;
     }
 }
 
@@ -186,7 +201,11 @@ sub on_update_hook {
     validate_dhcp_ranges($subnet);
 
     if ($ipam) {
-	PVE::Network::SDN::Subnets::add_subnet($zone, $subnetid, $subnet);
+	if ($old_subnet) {
+	    PVE::Network::SDN::Subnets::update_subnet($zone, $subnetid, $subnet, $old_subnet);
+	} else {
+	    PVE::Network::SDN::Subnets::add_subnet($zone, $subnetid, $subnet);
+	}
 
 	#don't register gateway for pointopoint
 	return if $pointopoint;
