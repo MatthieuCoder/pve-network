@@ -1,4 +1,4 @@
-libpve-network-perl (0.10.1-matthieu) bookworm; urgency=medium
+libpve-network-perl (0.10.1-2matthieu) bookworm; urgency=medium
 
   * dhcp: dnsmasq: add dhcp support for VRFs and EVPN Zones
   * evpn: use bgp unnumbered to handle veth exitnode local routing route propagation

@@ -114,9 +114,13 @@ sub generate_controller_config {
 	my $mask = Net::IP::ip_is_ipv6($ifaceip) ? "/128" : "32";
 
 	push(@{$bgp->{"address-family"}->{"$ipversion unicast"}}, "network $ifaceip/$mask") if $loopback;
-	push(@{$bgp->{"address-family"}->{"$ipversion unicast"}}, "neighbor BGP activate");
-	push(@{$bgp->{"address-family"}->{"$ipversion unicast"}}, "neighbor BGP soft-reconfiguration inbound");
     }
+    
+    push(@{$bgp->{"address-family"}->{"ipv4 unicast"}}, "neighbor BGP activate");
+	push(@{$bgp->{"address-family"}->{"ipv4 unicast"}}, "neighbor BGP soft-reconfiguration inbound");
+
+	push(@{$bgp->{"address-family"}->{"ipv6 unicast"}}, "neighbor BGP activate");
+	push(@{$bgp->{"address-family"}->{"ipv6 unicast"}}, "neighbor BGP soft-reconfiguration inbound");
 
     if ($loopback) {
 	$config->{frr_prefix_list}->{loopbacks_ips}->{10} = "permit 0.0.0.0/0 le 32";

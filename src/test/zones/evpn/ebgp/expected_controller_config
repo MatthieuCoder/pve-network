@@ -32,6 +32,11 @@ router bgp 65001
   neighbor BGP soft-reconfiguration inbound
  exit-address-family
  !
+ address-family ipv6 unicast
+  neighbor BGP activate
+  neighbor BGP soft-reconfiguration inbound
+ exit-address-family
+ !
  address-family l2vpn evpn
   neighbor VTEP activate
   neighbor VTEP route-map MAP_VTEP_IN in

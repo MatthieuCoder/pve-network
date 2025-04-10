@@ -1,0 +1,33 @@
+!
+router bgp 64512
+ !
+ address-family ipv4 unicast
+  redistribute kernel
+ exit-address-family
+ !
+ address-family ipv6 unicast
+  redistribute kernel
+ exit-address-family
+exit
+!
+router bgp 64512 vrf vrf_pantheon
+ neighbor FABRIC_PEERS peer-group
+ neighbor FABRIC_PEERS remote-as 64512
+ bgp listen range 10.80.50.0/24 peer-group FABRIC_PEERS
+ !
+ address-family ipv4 unicast
+  redistribute static
+  redistribute connected
+ exit-address-family
+ !
+ address-family ipv6 unicast
+  neighbor FABRIC_PEERS activate
+  redistribute connected
+  redistribute static
+ exit-address-family
+ !
+ address-family l2vpn evpn
+  advertise ipv4 unicast
+  advertise ipv6 unicast
+ exit-address-family
+exit

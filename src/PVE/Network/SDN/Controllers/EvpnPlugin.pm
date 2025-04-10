@@ -236,56 +236,51 @@ sub generate_controller_zone_config {
 	}
 
 	if ($exitnodes_local_routing) {
-		# if exitnodes_local_routing is enabled, we add a bgp unnumbered peer between the two VRFs
+
+		# add the peer in the host side
 		@controller_config = ();
-		push @controller_config, "neighbor xvrf_$id interface remote-as internal";
+		push @controller_config, "neighbor 10.255.255.2 remote-as internal";
+	    push(@{$config->{frr}->{router}->{"bgp $asn"}->{""}}, @controller_config);
+		# add the peer on the vrf side
+		@controller_config = ();
+		push @controller_config, "neighbor 10.255.255.1 remote-as internal";
 	    push(@{$config->{frr}->{router}->{"bgp $asn vrf $vrf"}->{""}}, @controller_config);
 
-		@controller_config = ();
-		push @controller_config, "neighbor xvrfp_$id interface remote-as internal";
-	    push(@{$config->{frr}->{router}->{"bgp $asn"}->{""}}, @controller_config);
-
 	    @controller_config = ();
 	    #redistribute connected to be able to route to local vms on the gateway
-	    push @controller_config, "redistribute connected";
-		push @controller_config, "neighbor xvrfp_$id activate";
-		push @controller_config, "neighbor xvrfp_$id route-map NOT_DEFAULT in";
+		push @controller_config, "neighbor 10.255.255.2 activate";
+		push @controller_config, "neighbor 10.255.255.2 route-map NOT_DEFAULT in";
+		push @controller_config, "neighbor 10.255.255.2 route-map NONE out";
 	    push(@{$config->{frr}->{router}->{"bgp $asn"}->{"address-family"}->{"ipv4 unicast"}}, @controller_config);
+	    push(@{$config->{frr}->{router}->{"bgp $asn"}->{"address-family"}->{"ipv6 unicast"}}, @controller_config);
 
+		# add the peer in the VRF
+		# if exitnodes_local_routing is enabled, we add a bgp unnumbered peer between the two VRFs
 	    @controller_config = ();
 	    #redistribute connected to be able to route to local vms on the gateway
-	    push @controller_config, "redistribute connected";
-		push @controller_config, "neighbor xvrf_$id activate";
-		push @controller_config, "neighbor xvrf_$id route-map NOT_DEFAULT in";
+		push @controller_config, "neighbor 10.255.255.1 activate";
+		push @controller_config, "neighbor 10.255.255.1 route-map NOT_DEFAULT out";
+		push @controller_config, "neighbor 10.255.255.1 route-map NONE in";
+	    push(@{$config->{frr}->{router}->{"bgp $asn vrf $vrf"}->{"address-family"}->{"ipv4 unicast"}}, @controller_config);
 	    push(@{$config->{frr}->{router}->{"bgp $asn vrf $vrf"}->{"address-family"}->{"ipv6 unicast"}}, @controller_config);
+
+		@controller_config = ();
+    	push @controller_config, "advertise-all-vni";
+    	push(@{$config->{frr}->{router}->{"bgp $asn vrf $vrf"}->{"address-family"}->{"l2vpn evpn"}}, @controller_config);
 
 		my $notdefault = [
 	    	{ rule => ["match ipv6 address prefix-list only_default_v6"], action => "deny" },
 	    	{ rule => ["match ip address prefix-list only_default"], action => "deny" },
 	    	{ rule => undef, action => "permit" },
 		];
+		my $none = [
+	    	{ rule => undef, action => "deny" },
+		];
 	
 		$config->{frr_routemap}->{'NOT_DEFAULT'} = $notdefault;
-	
-	} else {
-	    @controller_config = ();
-	    #import /32 routes of evpn network from vrf1 to default vrf (for packet return)
-	    push @controller_config, "import vrf $vrf";
-	    push(@{$config->{frr}->{router}->{"bgp $asn"}->{"address-family"}->{"ipv4 unicast"}}, @controller_config);
-	    push(@{$config->{frr}->{router}->{"bgp $asn"}->{"address-family"}->{"ipv6 unicast"}}, @controller_config);
-
-	    @controller_config = ();
-	    #redistribute connected to be able to route to local vms on the gateway
-	    push @controller_config, "redistribute connected";
-	    push(@{$config->{frr}->{router}->{"bgp $asn vrf $vrf"}->{"address-family"}->{"ipv4 unicast"}}, @controller_config);
-	    push(@{$config->{frr}->{router}->{"bgp $asn vrf $vrf"}->{"address-family"}->{"ipv6 unicast"}}, @controller_config);
+		$config->{frr_routemap}->{'NONE'} = $none;
 	}
 
-	@controller_config = ();
-	#add default originate to announce 0.0.0.0/0 type5 route in evpn
-	push @controller_config, "default-originate ipv4";
-	push @controller_config, "default-originate ipv6";
-	push(@{$config->{frr}->{router}->{"bgp $asn vrf $vrf"}->{"address-family"}->{"l2vpn evpn"}}, @controller_config);
     } elsif ($advertisesubnets) {
 
 	@controller_config = ();
