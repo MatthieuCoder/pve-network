@@ -98,7 +98,7 @@ sub generate_controller_config {
     if(@peers) {
 	push @controller_config, "neighbor BGP peer-group";
 	push @controller_config, "neighbor BGP remote-as $remoteas";
-	push @controller_config, "neighbor BGP bfd";
+	# push @controller_config, "neighbor BGP bfd";
 	push @controller_config, "neighbor BGP ebgp-multihop $ebgp_multihop" if $ebgp && $ebgp_multihop;
     }
 
