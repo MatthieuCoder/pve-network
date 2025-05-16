@@ -110,17 +110,15 @@ sub generate_controller_config {
 
     # address-family unicast
     if (@peers) {
-	my $ipversion = Net::IP::ip_is_ipv6($ifaceip) ? "ipv6" : "ipv4";
-	my $mask = Net::IP::ip_is_ipv6($ifaceip) ? "/128" : "32";
+    push(@{$bgp->{"address-family"}->{"ipv4 unicast"}}, "neighbor BGP activate");
+	push(@{$bgp->{"address-family"}->{"ipv6 unicast"}}, "neighbor BGP activate");
 
+	push(@{$bgp->{"address-family"}->{"ipv4 unicast"}}, "neighbor BGP soft-reconfiguration inbound");
+	push(@{$bgp->{"address-family"}->{"ipv6 unicast"}}, "neighbor BGP soft-reconfiguration inbound");
+    
+	my $mask = Net::IP::ip_is_ipv6($ifaceip) ? "128" : "32";
 	push(@{$bgp->{"address-family"}->{"$ipversion unicast"}}, "network $ifaceip/$mask") if $loopback;
     }
-    
-    push(@{$bgp->{"address-family"}->{"ipv4 unicast"}}, "neighbor BGP activate");
-	push(@{$bgp->{"address-family"}->{"ipv4 unicast"}}, "neighbor BGP soft-reconfiguration inbound");
-
-	push(@{$bgp->{"address-family"}->{"ipv6 unicast"}}, "neighbor BGP activate");
-	push(@{$bgp->{"address-family"}->{"ipv6 unicast"}}, "neighbor BGP soft-reconfiguration inbound");
 
     if ($loopback) {
 	$config->{frr_prefix_list}->{loopbacks_ips}->{10} = "permit 0.0.0.0/0 le 32";

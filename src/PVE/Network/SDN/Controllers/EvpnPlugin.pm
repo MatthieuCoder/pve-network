@@ -205,7 +205,6 @@ sub generate_controller_zone_config {
 
     if ($is_gateway) {
 
-
 	$config->{frr_prefix_list}->{'only_default'}->{1} = "permit 0.0.0.0/0";
 	$config->{frr_prefix_list_v6}->{'only_default_v6'}->{1} = "permit ::/0";
 
@@ -235,52 +234,25 @@ sub generate_controller_zone_config {
 	    unshift(@{$config->{frr_routemap}->{'MAP_VTEP_OUT'}}, $routemap);
 	}
 
-	if ($exitnodes_local_routing) {
-
-		# add the peer in the host side
-		@controller_config = ();
-		push @controller_config, "neighbor xvrf_$id interface remote-as internal";
-	    push(@{$config->{frr}->{router}->{"bgp $asn"}->{""}}, @controller_config);
-		# add the peer on the vrf side
-		@controller_config = ();
-		push @controller_config, "neighbor xvrfp_$id interface remote-as internal";
-	    push(@{$config->{frr}->{router}->{"bgp $asn vrf $vrf"}->{""}}, @controller_config);
-
+	if (!$exitnodes_local_routing) {
 	    @controller_config = ();
-	    #redistribute connected to be able to route to local vms on the gateway
-		push @controller_config, "neighbor xvrf_$id activate";
-		push @controller_config, "neighbor xvrf_$id route-map NOT_DEFAULT in";
-		push @controller_config, "neighbor xvrf_$id route-map NONE out";
+	    #import /32 routes of evpn network from vrf1 to default vrf (for packet return)
+	    push @controller_config, "import vrf $vrf";
 	    push(@{$config->{frr}->{router}->{"bgp $asn"}->{"address-family"}->{"ipv4 unicast"}}, @controller_config);
 	    push(@{$config->{frr}->{router}->{"bgp $asn"}->{"address-family"}->{"ipv6 unicast"}}, @controller_config);
 
-		# add the peer in the VRF
-		# if exitnodes_local_routing is enabled, we add a bgp unnumbered peer between the two VRFs
 	    @controller_config = ();
 	    #redistribute connected to be able to route to local vms on the gateway
-		push @controller_config, "neighbor xvrfp_$id activate";
-		push @controller_config, "neighbor xvrfp_$id route-map NOT_DEFAULT out";
-		push @controller_config, "neighbor xvrfp_$id route-map NONE in";
+	    push @controller_config, "redistribute connected";
 	    push(@{$config->{frr}->{router}->{"bgp $asn vrf $vrf"}->{"address-family"}->{"ipv4 unicast"}}, @controller_config);
 	    push(@{$config->{frr}->{router}->{"bgp $asn vrf $vrf"}->{"address-family"}->{"ipv6 unicast"}}, @controller_config);
-
-		@controller_config = ();
-    	push @controller_config, "advertise-all-vni";
-    	push(@{$config->{frr}->{router}->{"bgp $asn vrf $vrf"}->{"address-family"}->{"l2vpn evpn"}}, @controller_config);
-
-		my $notdefault = [
-	    	{ rule => ["match ipv6 address prefix-list only_default_v6"], action => "deny" },
-	    	{ rule => ["match ip address prefix-list only_default"], action => "deny" },
-	    	{ rule => undef, action => "permit" },
-		];
-		my $none = [
-	    	{ rule => undef, action => "deny" },
-		];
-	
-		$config->{frr_routemap}->{'NOT_DEFAULT'} = $notdefault;
-		$config->{frr_routemap}->{'NONE'} = $none;
 	}
 
+	@controller_config = ();
+	#add default originate to announce 0.0.0.0/0 type5 route in evpn
+	push @controller_config, "default-originate ipv4";
+	push @controller_config, "default-originate ipv6";
+	push(@{$config->{frr}->{router}->{"bgp $asn vrf $vrf"}->{"address-family"}->{"l2vpn evpn"}}, @controller_config);
     } elsif ($advertisesubnets) {
 
 	@controller_config = ();
@@ -309,6 +281,25 @@ sub generate_controller_zone_config {
 
 sub generate_controller_vnet_config {
     my ($class, $plugin_config, $controller, $zone, $zoneid, $vnetid, $config) = @_;
+
+    my $exitnodes = $zone->{'exitnodes'};
+    my $exitnodes_local_routing = $zone->{'exitnodes-local-routing'};
+
+    return if !$exitnodes_local_routing;
+
+    my $local_node = PVE::INotify::nodename();
+    my $is_gateway = $exitnodes->{$local_node};
+
+    return if !$is_gateway;
+
+    my $subnets = PVE::Network::SDN::Vnets::get_subnets($vnetid, 1);
+    my @controller_config = ();
+    foreach my $subnetid (sort keys %{$subnets}) {
+        my $subnet = $subnets->{$subnetid};
+	my $cidr = $subnet->{cidr};
+	push @controller_config, "ip route $cidr 10.255.255.2 xvrf_$zoneid";
+    }
+    push(@{$config->{frr_ip_protocol}}, @controller_config);
 }
 
 sub on_delete_hook {
