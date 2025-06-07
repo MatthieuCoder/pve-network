@@ -204,10 +204,12 @@ DBUSCFG
     my $config_directory = "$DNSMASQ_CONFIG_ROOT/$dhcpid";
 
     mkdir($config_directory, 0755) if !-d $config_directory;
+    my $vrf = PVE::Network::SDN::Zones::get_vrf($zone_cfg, $dhcpid);
 
     my $default_config = <<CFG;
 CONFIG_DIR='$config_directory,\*.conf'
 DNSMASQ_OPTS="--conf-file=/dev/null --enable-dbus=uk.org.thekelleys.dnsmasq.$dhcpid"
+VRF='$vrf'
 CFG
 
     PVE::Tools::file_set_contents(
