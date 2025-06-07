@@ -5,8 +5,10 @@ set -e
 while IFS= read -r dest; do
   ssh -n "root@$dest" "systemctl stop frr"
   echo "stopped frr on $dest"
-  sleep 5
+  # sleep 5
 done <<< $(cat proxmox_hosts)
+
+sleep 5
 
 while IFS= read -r dest; do
   ssh -n "root@$dest" "systemctl start frr"

@@ -1,0 +1,12 @@
+3358c6b4ade9cf772c8290f9bbeb82f7  usr/share/doc/libpve-network-api-perl/changelog.gz
+7f8a53e78bb1c2c64bdde47e459709d8  usr/share/doc/libpve-network-api-perl/copyright
+ee0929f0c836057b94f718e484c8e5c2  usr/share/perl5/PVE/API2/Network/SDN.pm
+ea31b2c62fbb55a5f15ef555c2007dbf  usr/share/perl5/PVE/API2/Network/SDN/Controllers.pm
+d310b06f21ac05220523d6b8f7b3b15f  usr/share/perl5/PVE/API2/Network/SDN/Dns.pm
+7e01529a83d91fe5ddf195eb5b839f59  usr/share/perl5/PVE/API2/Network/SDN/Ipams.pm
+c4bb7a2f97d477a7fbe3b14d9d0d275d  usr/share/perl5/PVE/API2/Network/SDN/Ips.pm
+e51fa280a310e81c05c5fc9af016d903  usr/share/perl5/PVE/API2/Network/SDN/Subnets.pm
+c3fb4119534d4401ec8c7ede2a9fe234  usr/share/perl5/PVE/API2/Network/SDN/Vnets.pm
+be34f542d0b08c3ae622a5ace846506d  usr/share/perl5/PVE/API2/Network/SDN/Zones.pm
+4d44752e8bee64de841d19702db3f543  usr/share/perl5/PVE/API2/Network/SDN/Zones/Content.pm
+0514de737d30d4d5eb4f20543e539c10  usr/share/perl5/PVE/API2/Network/SDN/Zones/Status.pm

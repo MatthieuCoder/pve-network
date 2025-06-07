@@ -3,5 +3,5 @@
 set -e
 
 while IFS= read -r dest; do
-  scp frr.conf.local "root@$dest:/etc/frr/frr.conf.local"
+  cat frr.conf.local | sed -e "s/ID_ID/$dest/" | ssh "root@$dest" "cat > /etc/frr/frr.conf.local"
 done <<< $(cat proxmox_hosts)

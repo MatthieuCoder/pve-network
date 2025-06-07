@@ -1,6 +1,0 @@
-services:
-  pve-network:
-    build: .
-    volumes:
-      - ./:/env
-    command: sleep infinity

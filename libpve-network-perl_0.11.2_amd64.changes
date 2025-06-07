@@ -1,0 +1,33 @@
+Format: 1.8
+Date: Wed, 09 Apr 2025 08:16:38 +0200
+Source: libpve-network-perl
+Binary: libpve-network-api-perl libpve-network-perl
+Architecture: all
+Version: 0.11.2
+Distribution: bookworm
+Urgency: medium
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Changed-By: Proxmox Support Team <support@proxmox.com>
+Description:
+ libpve-network-api-perl - API endpoints for Proxmox VE's SDN stack
+ libpve-network-perl - Proxmox VE's SDN (Software Defined Network) stack
+Changes:
+ libpve-network-perl (0.11.2) bookworm; urgency=medium
+ .
+   * frr: remove filtering outfunc of frr-reload command, new FRR 10.2 behavior
+     causes issues with that.
+ .
+   * frr: actively enable frr systemd service unit if not enabled and start frr
+     on reloading the controller config
+Checksums-Sha1:
+ dd32f6dd04d81839fac3302cf6dc06f804d51c38 14136 libpve-network-api-perl_0.11.2_all.deb
+ a2693e0f969d6c17da02f25727e8aa4eb0ab4367 38240 libpve-network-perl_0.11.2_all.deb
+ a1238c796365144f9c94aa4a107a10c8ebd78df2 14932 libpve-network-perl_0.11.2_amd64.buildinfo
+Checksums-Sha256:
+ 8569f11e98de446913549f885a877e399dd3f474e5ea7cf7f6ff0ba3a6dbc737 14136 libpve-network-api-perl_0.11.2_all.deb
+ fd37ba478bbace0012021426a3fcf05fbf08bc1ce1a4612ad65f3267c91cd96f 38240 libpve-network-perl_0.11.2_all.deb
+ 03f8ba113eddb2d216a11354c16ff495cc06eb1414b2269f1e812ad13ca7fa00 14932 libpve-network-perl_0.11.2_amd64.buildinfo
+Files:
+ cf8020be2bb61ce5639b64ea4557d014 14136 perl optional libpve-network-api-perl_0.11.2_all.deb
+ cf372f3814e23fcf71d83ba21ccdc995 38240 perl optional libpve-network-perl_0.11.2_all.deb
+ f33b977cd2ccb40647e280b4a94a7441 14932 perl optional libpve-network-perl_0.11.2_amd64.buildinfo

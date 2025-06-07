@@ -1,4 +1,9 @@
 !
+ip router-id ID_ID
+!
+router ospf
+  network ID_ID/24 area 40
+!
 router bgp 64512
  !
  address-family ipv4 unicast
