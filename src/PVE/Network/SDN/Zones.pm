@@ -28,6 +28,7 @@ PVE::Network::SDN::Zones::Plugin->init();
 
 my $local_network_sdn_file = "/etc/network/interfaces.d/sdn";
 my $default_mtu = 1500;
+my $default_vrf = "default";
 
 sub sdn_zones_config {
     my ($cfg, $id, $noerr) = @_;
@@ -375,6 +376,13 @@ sub get_mtu {
 
     my $plugin = PVE::Network::SDN::Zones::Plugin->lookup($zone_config->{type});
     return $plugin->get_mtu($zone_config) // $default_mtu;
+}
+
+sub get_vrf {
+    my ($zone_config, $zoneid) = @_;
+
+    my $plugin = PVE::Network::SDN::Zones::Plugin->lookup($zone_config->{type});
+    return $plugin->get_vrf($zone_config, $zoneid) // $default_vrf;
 }
 
 1;
